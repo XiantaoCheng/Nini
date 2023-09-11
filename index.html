@@ -3,10 +3,6 @@
 
 LaTeX数学记号::https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
 +[打开](,LaTeX数学记号)
-
-            "three": "https://unpkg.com/three@0.156.1/build/three.module.js",
-            "three/addons/": "https://unpkg.com/browse/three@0.156.1/examples/jsm/"
-
 -->
 
 <html>
@@ -31,15 +27,7 @@ function print() {
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
-
-<script type="importmap">
-    {
-        "imports": {
-            "three": "./res/three/build/three.module.js",
-            "three/addons/": "./res/three/examples/jsm/"
-        }
-    }
-</script>
+%[结构语言核心JS]
 
 
 <meta charset="utf-8">
@@ -128,12 +116,24 @@ emoji::https://unicode.org/emoji/charts/full-emoji-list.html#1f92b
 <script src="https://stemkoski.github.io/Three.js/js/Three.js"></script>
 <script src="https://stemkoski.github.io/Three.js/js/OrbitControls.js"></script>
 
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "./res/three/build/three.module.js",
+            "three/addons/": "./res/three/examples/jsm/"
+        }
+    }
+</script>
+
+
 <script src="./js/NetP.js"></script>
 <script src="./js/Karma.js"></script>
 <script src="./js/Parser.js"></script>
 <script src="./js/StCore.js"></script>
 <script src="./js/NL_parser.js"></script>
 <script type="module" src="./js/three.js"></script>
+
 
 
 
@@ -290,11 +290,13 @@ function previewFile() {
 
 edit_box.addEventListener("keydown", function (event) {
     if(event.key==='Enter') {
-        world_3D=window.m_world3D;
-        if(world_3D!==undefined) {
+        if(world_3D===undefined) {
+            world_3D=window.m_world3D;
 //            world_3D.init('world_3d_scene');
-            world_3D.init();
-            animate_3D();
+            if(world_3D!==undefined) {
+                world_3D.init();
+                animate_3D();
+            }
         }
 
         var code=edit_box.value;
