@@ -9,11 +9,19 @@ OrbitControls(库)::https://stemkoski.github.io/Three.js/js/OrbitControls.js
 
 render
 版本1:...
+https://unpkg.com/three/build/three.module.js
 */
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+
+//import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+//import { ObritControls } from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
+//import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+//import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+
 
 // MAIN
 
@@ -67,8 +75,8 @@ class Scene3D {
         var SCREEN_HEIGHT = SCREEN_WIDTH/1.5;
 //        var SCREEN_HEIGHT = this.m_container.offsetHeight;
 
-        var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-        this.m_camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+//        var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+        this.m_camera = new THREE.PerspectiveCamera( 45, 1.5, 0.1, 20000);
         this.m_scene.add(this.m_camera);
         this.m_camera.position.set(0,150,400);
         this.m_camera.lookAt(this.m_scene.position);
@@ -107,14 +115,12 @@ class Scene3D {
 //        this.m_controls.enablePan = false;
 //        this.m_controls.target.set( 0, 20, 0 );
 //        this.m_controls.update();
-
-    
     
     }
 
     update() {
         this.m_renderer.render( this.m_scene, this.m_camera );
-        this.m_controls.update();
+//        this.m_controls.update();
     }
 
     addBox(L,W,H,x,y,z) {
@@ -216,8 +222,28 @@ class Scene3D {
         this.m_controls.center.z=shape.position.z;
     }
 
+    exportOBJ() {
+        const exporter = new OBJExporter();
+        const data = exporter.parse( this.m_scene );
+        console.log(data);
+        this.downloadFile("model.obj", data );
+    }
+
+    downloadFile(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        
+        element.click();
+        
+        document.body.removeChild(element);
+    }
+
 }
 
+print("??????!!")
 var world_3D=new Scene3D();
 window.m_world3D=world_3D;
 
