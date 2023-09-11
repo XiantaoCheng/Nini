@@ -293,8 +293,8 @@ function previewFile() {
 
 edit_box.addEventListener("keydown", function (event) {
     if(event.key==='Enter') {
-        if(world_3D===undefined) {
-            world_3D=window.m_world3D;
+        world_3D=window.m_world3D;
+        if(world_3D!==undefined) {
 //            world_3D.init('world_3d_scene');
             world_3D.init();
             animate_3D();
