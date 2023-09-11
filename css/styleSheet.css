@@ -1,0 +1,51 @@
+.window {
+  position: relative;
+  width: 90%;
+  #overflow: hidden;
+  overflow: auto;
+  # padding-top: 20%;
+  left: 5%;
+  border: 2px solid #888888;
+}
+
+.window.history {
+  height: 60%;
+  background-color: lightgrey;
+}
+
+.window.draw {
+    height: 60%;
+    background-color: white;
+    display: none
+}
+
+.window.me {
+  background-color: white;
+}
+
+.chat-bubble {
+    margin: 10px;
+    display: inline-block;
+    position: relative;
+    width: auto;
+    height: auto;
+}
+
+.chat-bubble.Nini {
+    float: left;
+    clear: both;
+    background-color: white;
+}
+
+.chat-bubble.me {
+    float: right;
+    clear: both;
+    background-color: lightgreen;
+}
+
+.talktext{
+    padding: 1em;
+    text-align: left;
+    line-height: 1.5em;
+}
+

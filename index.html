@@ -1,0 +1,430 @@
+<!--
++[返回目录]
+
+LaTeX数学记号::https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
++[打开](,LaTeX数学记号)
+-->
+
+<html>
+  <head>
+<!--code-->
+<link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+<script>
+function print() {
+    var text;
+    document.getElementById("cmd_window").innerHTML+="<br>";
+    for (var i=0; i < arguments.length; i++) {
+        text=arguments[i];
+        document.getElementById("cmd_window").innerHTML+=" "+text;
+    }
+}
+</script>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+%[结构语言核心JS]
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the top navigation bar */
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+/* Style the topnav links */
+.topnav a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+/* Change color on hover */
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+
+/* Style the content */
+.content {
+  background-color: #fff;
+  padding: 10px;
+}
+
+/*
++[网页](web,实验室日历模板)
+*/
+
+/* Style the footer */
+.footer {
+  background-color: #333;
+  padding: 10px;
+  margin-top: 20px
+}
+
+.footer p {
+  color: #ddd
+}
+
+</style>
+
+
+  </head>
+
+
+<body>
+<div class="topnav">
+  <a href="#">Link</a>
+  <a href="#">Link</a>
+  <a href="#">Link</a>
+</div>
+
+
+<div class="content">
+    <p>
+<!--
+地址::文档/S应用/NiniJS/index.html
++[H函数](,index)
+
+talk
+emoji::https://unicode.org/emoji/charts/full-emoji-list.html#1f92b
+-->
+
+<link rel="stylesheet" href="./css/styleSheet.css">
+
+<script src="https://stemkoski.github.io/Three.js/js/Three.js"></script>
+<script src="https://stemkoski.github.io/Three.js/js/OrbitControls.js"></script>
+
+<script src="./js/NetP.js"></script>
+<script src="./js/Karma.js"></script>
+<script src="./js/Parser.js"></script>
+<script src="./js/StCore.js"></script>
+<script src="./js/NL_parser.js"></script>
+<script type="module" src="./js/three.js"></script>
+
+
+<!--
++[H函数](,Nini聊天框)
+&#129409
+&#x1f611
+&#x1f612
+&#x1f623
+&#x1f603
+
+&#x1f603
+-->
+
+<h1 id='Nini_face'>Nini: 
+<span onmousedown="changeWnd('')"></span>
+</h1>
+
+<div id="chat_history" class="window history">
+
+<!--
++[H函数](,Nini聊天框)
+-->
+
+<div class="chat-bubble Nini">
+    <div class="talktext">
+你好! 点击<span onmousedown="changeWnd('')">这里</span>, 可以返回聊天窗口
+    </div>
+</div>
+
+</div>
+
+
+
+<div id="draw_window" class="window draw">
+<svg width=100%  viewBox="0 0 1000 1000" id='display_window'></svg>
+</div>
+<div id="world_3d_scene" class="window history" display="none"></div>
+
+<br>
+
+<textarea class="window me" id='edit_box' rows=4>A0是长方形"20,100"</textarea>
+
+<input type="file" onchange="previewFile()" /><br />
+<p id='cmd_window'></p>
+
+<!--
++[H函数](,index)
+-->
+
+
+<!--
+Nini, 打开网页画板(文件)
+运行代码(JS函数):...
++[新建阅读窗口](,运行代码)
+
++[H函数](,index)
+-->
+    </p>
+</div>
+
+<p id="cmd_window">Hello world!</p>
+<script>
+function print() {
+    document.getElementById("cmd_window").innerHTML+="<br>";
+    for (var i=0; i < arguments.length; i++) {
+        text=arguments[i];
+        document.getElementById("cmd_window").innerHTML+=" "+text;
+    }
+}
+</script>
+<script>
+/*
+world_3D
+previewFile
+*/
+
+var face_normal='&#x1f611';
+var face_see='&#x1f612';
+var face_bad='&#x1f623';
+var face_happy='&#x1f603';
+
+// Nini.init(st_core.textContent);
+// Nini.init(st_core.innerHTML);
+var pt_Nini;
+var echo_sent=[];
+var list_pt=[];
+
+var show_index=0;
+
+window.addEventListener("keydown", function (event) {
+  if (event.defaultPrevented) {
+    return;
+  }
+
+  switch (event.key) {
+    case "Escape":
+      changeWnd('');
+      break;
+    default:
+      return; // Quit when this doesn't handle the key event.
+  }
+
+  event.preventDefault();
+}, true);
+
+/*
+
+*/
+
+
+function readFile(file)
+{
+    var text0;
+    var f = new XMLHttpRequest();
+    f.open("GET", file, false);
+    f.onreadystatechange = function ()
+    {
+        if(f.readyState === 4)
+        {
+            if(f.status === 200 || f.status == 0)
+            {
+                var res= f.responseText;
+                text0=res;
+            }
+        }
+    }
+    f.send(null);
+    return text0
+}
+
+
+
+function previewFile() {
+  const [file] = document.querySelector("input[type=file]").files;
+  const reader = new FileReader();
+
+  reader.addEventListener(
+    "load",
+    () => {
+        list_pt=loadFCode(reader.result);
+        Nini.init(list_pt);
+        pt_Nini=Nini.m_self;
+    },
+    false,
+  );
+
+  if (file) {
+    reader.readAsText(file);
+  }
+}
+
+
+
+edit_box.addEventListener("keydown", function (event) {
+    if(event.key==='Enter') {
+        if(world_3D===undefined) {
+            world_3D=window.m_world3D;
+//            world_3D.init('world_3d_scene');
+            world_3D.init();
+            animate_3D();
+        }
+
+        var code=edit_box.value;
+        edit_box.value='';
+        event.preventDefault();
+        updateChatHistory(code);
+        runCode_Nini(code);
+    }
+});
+
+
+function changeWnd(i) {
+    if(i==='') {
+        show_index=0;
+    }
+    else {
+        show_index+=i;
+    }
+    show_index=(show_index)%3;
+    if(show_index==0) {
+        chat_history.style.display="block";
+        draw_window.style.display="none";
+        world_3d_scene.style.display="none";
+    }
+    else if(show_index==1) {
+        world_3d_scene.style.display="block";
+        chat_history.style.display="none";
+        draw_window.style.display="none";
+    }
+    else {
+        chat_history.style.display="none";
+        draw_window.style.display="block";
+        world_3d_scene.style.display="none";
+    }
+}
+
+function talkToNini(code) {
+    updateChatHistory(code);
+    runCode_Nini(code);
+}
+
+function updateChatHistory(code,speaker='me') {
+    if(code==='%三维画板') {
+        chat_history.innerHTML+=`<div class="chat-bubble ${speaker}">
+                <div class="talktext">
+            <span onmousedown='changeWnd(1)'><b><u>点击这里</u></b></span>
+                </div>
+            </div>
+        `;
+    }
+    else if(code==='%网页画板') {
+        chat_history.innerHTML+=`<div class="chat-bubble ${speaker}">
+                <div class="talktext">
+            <span onmousedown='changeWnd(2)'><b><u>点击这里</u></b></span>
+                </div>
+            </div>
+        `;
+    }
+    else {
+        chat_history.innerHTML+=`<div class="chat-bubble ${speaker}">
+                <div class="talktext">
+            ${code}
+                </div>
+            </div>
+        `;
+    }
+
+    chat_history.scrollTop = chat_history.scrollHeight;
+
+}
+
+function runCode_Nini(code) {
+    understandHear(code);
+    Nini.do('+[自我意识](Nini,)->+[更新意境](Nini,)',pt_Nini);
+    if(Nini.m_speak.m_text!=='') {
+        updateChatHistory(Nini.m_speak.m_text,speaker='Nini');
+        Nini.m_speak.m_text='';
+    }
+}
+
+function understandHear(code) {
+    var list_pt,pt0,pt_con,pt_hear;
+    var list_del=[];
+    pt_hear=Nini.m_hear;
+    pt_hear.m_text=code;
+
+    for(var i=0;i<pt_hear.m_con.length;i++) {
+        pt_con=pt_hear.m_con[i];
+        if(pt_con.m_name=='^起点') {
+            list_del.push(pt_con);
+        }
+//print(pt_con.info());
+    }
+    for(var i=0;i<list_del.length;i++) {
+        list_del[i].con('',0);
+    }
+
+    [list_pt,code]=NLP.sent2Struct(code);
+    if(list_pt.length==0) {
+        return;
+    }
+    else {
+        pt0=list_pt[0];
+        pt0.con(pt_hear,0)
+    }
+}
+
+function animate_3D() {
+    requestAnimationFrame(animate_3D);
+    world_3D.update();
+}
+
+
+//print(world_3D);
+//var world_3D=new Scene3D();
+
+var world_3D=undefined;
+window.addEventListener( 'resize', function () {
+    var width=world_3D.m_container.offsetWidth;
+    var height=world_3D.m_container.offsetWidth/1.5;
+
+    world_3D.m_camera.updateProjectionMatrix();
+    world_3D.m_renderer.setSize( width, height );
+    world_3D.update();
+});
+
+var text0=readFile("./Nini1.ftxt");
+list_pt=loadFCode(text0);
+Nini.init(list_pt);
+pt_Nini=Nini.m_self;
+
+changeWnd(0);
+
+
+
+/*
+保存描述:...
+*/
+</script>
+
+<div class="footer">
+  <p>Footer</p>
+</div>
+
+</body>
+</html>
