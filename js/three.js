@@ -12,15 +12,15 @@ render
 https://unpkg.com/three/build/three.module.js
 */
 
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
-
-//import * as THREE from 'https://unpkg.com/three/build/three.module.js';
-//import { ObritControls } from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
+//import * as THREE from 'three';
+//import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 //import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 //import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+
+import * as THREE from '../res/three/build/three.module.js';
+import { ObritControls } from '../res/three/examples/jsm/controls/OrbitControls.js';
+import { OBJLoader } from '../res/three/examples/jsm/loaders/OBJLoader.js';
+import { OBJExporter } from '../res/three/examples/jsm/exporters/OBJExporter.js';
 
 
 // MAIN
