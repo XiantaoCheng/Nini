@@ -7,6 +7,7 @@ LaTeX数学记号::https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
 
 <html>
   <head>
+<meta charset="utf-8">
 <!--code-->
 <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.min.css">
@@ -208,7 +209,8 @@ function print() {
 <script>
 /*
 world_3D
-previewFile
+Nini.do
+NLP
 */
 
 var face_normal='&#x1f611';
@@ -370,12 +372,20 @@ function updateChatHistory(code,speaker='me') {
 
 function runCode_Nini(code) {
     understandHear(code);
-    Nini.do('+[自我意识](Nini,)->+[更新意境](Nini,)',pt_Nini);
+    Nini.do('+[自我意识](Nini,)->+[更新意境](Nini,)',Nini.m_world,[pt_Nini]);
+
+let list_pt=listFromPt(Nini.m_world);
+printPtList(list_pt);
+
     if(Nini.m_speak.m_text!=='') {
         updateChatHistory(Nini.m_speak.m_text,speaker='Nini');
         Nini.m_speak.m_text='';
     }
 }
+
+/*
+保存understandHear:...
+*/
 
 function understandHear(code) {
     var list_pt,pt0,pt_con,pt_hear;
@@ -385,22 +395,28 @@ function understandHear(code) {
 
     for(var i=0;i<pt_hear.m_con.length;i++) {
         pt_con=pt_hear.m_con[i];
-        if(pt_con.m_name=='^起点') {
+        if(pt_con.m_name==='的' && pt_con.m_db[0]===pt_hear) {
             list_del.push(pt_con);
         }
-//print(pt_con.info());
     }
     for(var i=0;i<list_del.length;i++) {
         list_del[i].con('',0);
+        if (list_del[i].m_db[1]!=="") {
+            list_del[i].m_db[1].con('','');
+        }
     }
 
-    [list_pt,code]=NLP.sent2Struct(code);
-    if(list_pt.length==0) {
+// NLP
+    list_pt=parser_text2pts(code);
+//printPtList(list_pt);
+    if(list_pt.length==0 || list_pt===undefined) {
         return;
     }
     else {
-        pt0=list_pt[0];
-        pt0.con(pt_hear,0)
+        for (var i in list_pt) {
+            var pt=new NetP("的");
+            pt.con(pt_hear,list_pt[i]);
+        }
     }
 }
 

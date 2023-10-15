@@ -1,6 +1,7 @@
 /*
-地址::文档/S应用/NiniJS/NetP.js
+地址::文档/S应用/NiniJS/js/NetP.js
 +[保存文本](,NetP)
++JS函数(NetP,)
 */
 
 function arrayRemove(arr,value) {
@@ -21,6 +22,8 @@ class NetP {
         this.m_creator='';
         this.m_dev='';
         this.m_var='';
+        this.m_building=false;
+        this.m_project=false;
         this.m_time=global_counter;
         global_counter+=1;
 
@@ -67,17 +70,20 @@ class NetP {
         }
     }
 
+/*
++[保存文本](,NetP)
+*/
     delete() {
         this.disconnect_i(0);
         this.disconnect_i(1);
         var cons=this.m_con.slice();
-        for(var i;i<cons.length;i++) {
+        for(var i=0;i<cons.length;i++) {
             var point=cons[i];
-            if(point.m_db[0]==this) {
-                point.disconnect(0);
+            if(point.m_db[0]===this) {
+                point.disconnect_i(0);
             }
-            if(point.m_db[1]==this) {
-                point.disconnect(1);
+            if(point.m_db[1]===this) {
+                point.disconnect_i(1);
             }
         }
     }
@@ -95,7 +101,6 @@ class NetP {
     }
 
     info() {
-    
         var str_info, str_d, str_b;
         if (this.m_db[0]=='') {
             str_d='';

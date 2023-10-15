@@ -1,6 +1,12 @@
 /*
-地址::文档/S应用/NiniJS/Karma.js
+地址::文档/S应用/NiniJS/js/Karma.js
 +[保存文本](,Karma)
+NetP(库)::文档/S应用/NiniJS/js/NetP.js
+
+保存:...
+[is]
+'_re'
+
 */
 
 
@@ -119,10 +125,13 @@ class Karma {
         else if(this.m_symbol.m_name=='[那]') {
             return 'green';
         }
+/*
++[保存文本](,Karma)
+*/
         if(this.m_symbol.m_name=='_正则表达式' | this.m_symbol.m_name=='_re') {
-            
+            let pattern, match;
             try {
-                pattern=new RegEx(this.m_symbol.m_text);
+                pattern=new RegExp(this.m_symbol.m_text);
             } catch(e) {
                 print('Invalid regular expression: ',this.m_symbol.m_text,'!');
                 return 'red';
@@ -136,10 +145,18 @@ class Karma {
                 return 'red';
             }
         }
+// _word or _[word]
         if(this.m_symbol.m_name!='' & this.m_symbol.m_name[0]=='_') {
             name=this.m_symbol.m_name.slice(1,this.m_symbol.m_name.length);
             var name_m=this.m_map.m_name;
-            if(name.length==0) {
+            var text_1 = this.m_symbol.m_text;
+            var text_2 = this.m_map.m_text;
+
+            if(text_1!=='' & text_1!==text_2) {
+                return 'red';
+            }
+
+            else if(name.length==0) {
                 return 'green';
             }
             
@@ -157,9 +174,13 @@ class Karma {
                 return 'green';
             }
         }
+
+// [word] or +[word]
         if(this.m_symbol.m_name.length > 1 & this.m_symbol.m_name[0]=='[' & this.m_symbol.m_name[this.m_symbol.m_name.length-1]==']') {
+
             var name1=this.m_symbol.m_name.slice(1,this.m_symbol.m_name.length-1);
             var name2=this.m_symbol.m_name;
+
             if(this.m_interp==false & this.m_map.m_creator=='' & this.m_buildMode==false) {
                 return 'red';
             }
@@ -171,6 +192,8 @@ class Karma {
                 return 'red';
             }
         }
+
+// ~word
         if(this.m_symbol.m_name!='' & this.m_symbol.m_name[0]=='~') {
             name=this.m_symbol.m_name.slice(1,this.m_symbol.m_name.length);
             if(name==this.m_map.m_name) {
@@ -182,8 +205,10 @@ class Karma {
             }
         }
         
+// word
         else {
             name=this.m_map.m_name;
+
             if(name!='' & name[0]=='[' & name[name.length-1]==']') {
                 name=name.slice(1,name.length-1);
             }

@@ -3,10 +3,15 @@
 +[保存文本](,StCore)
 +[J函数](,StCore)
 
-init
+###
 StParser(库)::文档/S应用/NiniJS/js/Parser.js
 Karma(库)::文档/S应用/NiniJS/js/Karma.js
 NetP(库)::文档/S应用/NiniJS/js/NetP.js
+
+记住"Javascript"
+clear
+print
+[m_name]
 */
 
 function listFromPt(pt) {
@@ -34,6 +39,9 @@ class StCore {
         this.m_idea='';
         this.m_hear='';
         this.m_speak='';
+        this.m_world='';
+
+        this.m_tmp=[];
     }
 
 /*
@@ -76,6 +84,10 @@ loadFCode
                 this.m_speak=pt;
                 pt.m_permission=0;
             }
+            else if(pt.m_name==='世界') {
+                this.m_world=pt;
+                pt.m_permission=0;
+            }
         }
 
         if(this.m_hear=='') {
@@ -87,6 +99,11 @@ loadFCode
             this.m_speak=new NetP('说');
             new NetP('的').con(this.m_self,this.m_speak);
             this.m_speak.m_permission=0;
+        }
+        if(this.m_world=='') {
+            this.m_world=new NetP('世界');
+            new NetP('的').con(this.m_self,this.m_world);
+            this.m_world.m_permission=0;
         }
 
         return list_pt;
@@ -103,7 +120,7 @@ loadFCode
         }
 
         [code,list_km]=this.run_code(code,list_pt,list_new);
-        this.operation(list_new);
+        list_new=this.operation(list_new);
         
         for(var i=0;i<list_new.length;i++) {
             var pt=list_new[i],pt_de;
@@ -151,14 +168,11 @@ think
                 if(karma.m_interp) {
                     int_result=this.think(karma.m_map);
                     list_del.push(karma.m_map);
-//print(int_result);
                     if(!int_result) {
                         karma.m_map='';
                     }
                 }
 
-//printPtList(karma.m_listMP)
-//printPtList(list_new);
                 listPtIntoPoolPt(pool,list_new);
                 mergeArrays(list_pt,list_new);
                 mergeArrays(list_ns,list_new);
@@ -202,7 +216,7 @@ think
 
         result=this.run_code_line(list_km[0],[pt_code],list_new);
         if(result) {
-            this.operation(list_new);
+            list_new=this.operation(list_new);
         }
         return result;
     }
@@ -212,15 +226,16 @@ think
     }
 
     operation(list_pt) {
-//printPtList(list_pt);
         var list_del=[];
+        var list_new=[];
         this.reorder_ops(list_pt);
         for(var i=list_pt.length-1;i>=0;i--) {
             var pt=list_pt[i];
             var operated=false;
             var sbj=pt.m_db[0],obj=pt.m_db[1];
+            pt.m_building=false;
 
-            if(pt.m_name=='[del]') {
+            if(pt.m_name=='[del]' | pt.m_name=='[删除]') {
                 this.opDel(pt,list_pt,list_del);
                 operated=true;
             }
@@ -235,6 +250,10 @@ think
 
             else if(pt.m_name=='[消息窗口]') {
                 this.opMsgWin(pt);
+                operated=true;
+            }
+            else if(pt.m_name=='[显示]') {
+                this.opPrint(obj,pt);
                 operated=true;
             }
             else if(pt.m_name=='[修改内容]') {
@@ -271,18 +290,33 @@ think
                 this.opLibDefined(pt);
                 operated=true;
             }
+
             if(operated) {
                 list_del.push(i);
+                list_new=this.clear(list_new);
             }
         }
 
-        for(var i=0;i<list_del.length;i++) {
-            var i_del=list_del[i];
-            var pt_del=list_pt[i_del];
+        list_pt=this.delActPts(list_pt,list_del);
+        return list_pt;
+    }
+
+    delActPts(list_pt,list_del) {
+        for (let i=0;i<list_del.length;i++) {
+            let i_del=list_del[i];
+            let pt_del=list_pt[i_del];
             list_pt.splice(i_del,1);
+    
+            for (let j in pt_del.m_con) {
+                if (pt_del.m_con[j].m_name==="的") {
+                    pt_del.m_con[j].delete();
+                }
+            }
+
             pt_del.delete();
-            //delete pt_del;
         }
+    
+        return list_pt;
     }
     
     opMsgWin(action) {
@@ -403,6 +437,21 @@ replace
             print(e);
         }
 
+    }
+
+    opPrint(obj,action) {
+        var text='',con='';
+        if(action.m_text==='') {
+            text=obj.info();
+        }
+        else if(obj==='') {
+            text=action.m_text;
+        }
+        else {
+            con=obj.m_text;
+            text=action.m_text+obj.info();
+        }
+        print(text);
     }
 
     opWriteText(sbj,obj,action) {
@@ -526,10 +575,9 @@ replace
         var name=action.m_name.slice(1,action.m_name.length-1);
         var result=false;
 
-        for(var i in list_pt) {
-            var pt=list_pt[i];
+        for(let i in list_pt) {
+            let pt=list_pt[i];
             if(name===list_pt[i].m_name) {
-                //result=this.act(list_pt[i].m_text,action);
                 result=this.act(pt,action);
                 if(result) {
                     break;
@@ -538,7 +586,7 @@ replace
         }
     }
 
-    think(question,list_new) {
+    think(question) {
         var result=false;
         var list_pt=listFromPt(this.m_idea);
         var name=question.m_name.slice(1,question.m_name.length-1);
@@ -555,17 +603,43 @@ replace
         result=this.termBuiltin(question);
         return result;
     }
+/*
++[保存文本](,StCore)
+*/
+    clear(list_ns) {
+        let list_new=this.m_tmp;
+        var list_pt=[];
+        for (let i in list_new) {
+            let pt=list_new[i];
+            if (pt.m_project===false) {
+                pt.delete();
+            }
+            else {
+                list_pt.push(pt);
+            }
+        }
+        this.m_tmp=[];
+
+        list_pt=this.operation(list_pt);
+        list_ns=list_ns.concat(list_pt);
+        return list_ns;
+    }
     
     match(pt_A,pt_Q) {
         var code1=pt_A.m_text;
         var list_km=[],list_new=[],result=false;
         var parser=this.m_parser;
+        var list_pt=[];
 
         list_km=parser.readSubCode_tokener(code1);
     
+        list_pt=listFromPt(pt_A);
+        list_pt.push(pt_A);
         list_km[0].m_listMP=[pt_Q];
         list_km[0].m_restricted=true;
-        this.run_code_line(list_km[0],[pt_A],list_new);
+        this.run_code_line(list_km[0],list_pt,list_new);
+
+        this.m_tmp=this.m_tmp.concat(list_new);
 
         if(list_km[0].m_reState==='dark green') {
             result=true;
@@ -591,10 +665,38 @@ replace
         else if(question.m_name=='[==]') {
             return this.tpEqual(sbj,obj,question);
         }
+        else if(question.m_name=='[想]') {
+            return this.tpThink(question);
+        }
+        else if(question.m_name=='[说]') {
+            return this.tpSay(obj,question);
+        }
+        else if(question.m_name=='[投影]') {
+            return this.tpProject(obj,question);
+        }
         
         return false;
     }
     
+    tpThink(question) {
+        var pt_A="",result=false;
+        
+        for (var i in question.m_con) {
+            var con=question.m_con[i];
+            if (con.m_name==="code" | con.m_name==="[code]") {
+                if (con.m_db[0]===question & con.m_db[1]!=='') {
+                    pt_A=con.m_db[1];
+                    question.m_name='['+pt_A.m_name+']';
+                }
+            }
+        }
+        if (pt_A!=="") {
+            result=this.match(pt_A,question);
+        }
+        question.m_name='想';
+        return result;
+    }
+
     tpName(sbj,obj,question) {
         if(question.m_db[0]==='' | question.m_db[1]==='') {
             return false;
@@ -608,22 +710,28 @@ replace
             print('Error! Name can\'t be empty');
             return false;
         }
-    
+
         if(question.m_db[1].m_building==true) {
             question.m_db[1].m_name=name;
         }
         else {
             print("Error! [m_name] can only set a new point's m_name.",question.m_db[1].info(),"isn't a new point.");
         }
-        this.answerQuestion(question)
-        return true
+        this.answerQuestion(question);
+        return true;
     }
     
     tpText(sbj,obj,question) {
-        if(question.m_db[0]==='' | question.m_db[1]==='') {
+        var text="";
+        if(question.m_db[1]==='') {
             return false;
         }
-        var text=question.m_db[0].m_text;
+        else if(question.m_db[0]==='') {
+            text=question.m_text;
+        }
+        else {
+            text=question.m_db[0].m_text;
+        }
     
         if(question.m_db[1].m_building==true) {
             question.m_db[1].m_text=text;
@@ -631,8 +739,38 @@ replace
         else {
             print("Error! [m_text] can only set a new point's m_text.",question.m_db[1].info(),"isn't a new point.");
         }
-        this.answerQuestion(question)
-        return true
+
+        this.answerQuestion(question);
+        return true;
+    }
+    
+    tpSay(obj,question) {
+        var text="";
+        if(question.m_db[1]==='' & question.m_text==='') {
+            return false;
+        }
+        else if(question.m_text==='') {
+            text=question.m_db[1].info();
+        }
+        else if(question.m_db[1]==='') {
+            text=question.m_text;
+        }
+        else {
+            text=question.m_text+question.m_db[1].info();
+        }
+        print(text);
+
+        this.answerQuestion(question);
+        return true;
+    }
+    
+    tpProject(obj,question) {
+        if(question.m_db[1]==='') {
+            return false;
+        }
+        question.m_db[1].m_project=true;
+        this.answerQuestion(question);
+        return true;
     }
 
     tpEqual(sbj,obj,question) {
@@ -711,7 +849,7 @@ function poolPt2listPt(pool) {
 }
 
 /*
-init
+消息窗口
 +[保存文本](,StCore)
 */
 
@@ -722,6 +860,7 @@ function loadFCode(fcode) {
     var code=fcode;
     code=code.replaceAll("\r\n","\n");
 
+//    if (code.slice(0,7)!="### 节点\n") {
     if (code.slice(0,4)!="### ") {
         throw new Error("错误! 没有检测到节点段落. ");
     }
@@ -743,8 +882,8 @@ function loadFCode(fcode) {
         }
         list_pt.push(new NetP(code.slice(0,i)));
     }
-    // print("完成节点输入! ");
-    // print("开始构建关联... ");
+
+//    if (code.slice(0,7)!="### 关联\n") {
     if (code.slice(0,4)!="### ") {
         throw new Error("错误! 没有检测到关联段落. ");
     }
@@ -800,6 +939,7 @@ function loadFCode(fcode) {
     }
     // print("构建关联完成! ");
     // print("开始读取内容... ");
+//    if (code.slice(0,7)!="### 内容\n") {
     if (code.slice(0,4)!="### ") {
         throw new Error("错误! 没有检测到内容段落. ");
     }
@@ -808,7 +948,8 @@ function loadFCode(fcode) {
         re=/^#([\d]*), ([\d]*):\n/g;
         result=re.exec(code);
         if (result==null) {
-            if (code!='' && code.slice(0,4)=="### ") {
+//            if (code!='' && code=="### 结束") {
+            if (code!='' && code.slice(0,6)=="### 结束") {
                 break;
             }
             else {
