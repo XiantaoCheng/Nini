@@ -21,7 +21,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
-import { CSG } from 'three-csg-ts';
+//import { CSG } from 'three-csg-ts';
 
 
 //import * as THREE from 'https://unpkg.com/three/build/three.module.js';
