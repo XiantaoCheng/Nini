@@ -108,15 +108,14 @@ body {
 地址::文档/S应用/NiniJS/index.html
 +[H函数](,index)
 
+<script src="https://stemkoski.github.io/Three.js/js/Three.js"></script>
+<script src="https://stemkoski.github.io/Three.js/js/OrbitControls.js"></script>
+
 talk
 emoji::https://unicode.org/emoji/charts/full-emoji-list.html#1f92b
 -->
 
 <link rel="stylesheet" href="./css/styleSheet.css">
-
-<script src="https://stemkoski.github.io/Three.js/js/Three.js"></script>
-<script src="https://stemkoski.github.io/Three.js/js/OrbitControls.js"></script>
-
 
 <script type="importmap">
     {
@@ -133,13 +132,14 @@ emoji::https://unicode.org/emoji/charts/full-emoji-list.html#1f92b
 <script src="./js/Parser.js"></script>
 <script src="./js/StCore.js"></script>
 <script src="./js/NL_parser.js"></script>
+<script src="./js/draw.js"></script>
 <script type="module" src="./js/three.js"></script>
 
 
 
 
 <!--
-+[H函数](,Nini聊天框)
++[H函数](,index)
 &#129409
 &#x1f611
 &#x1f612
@@ -149,11 +149,16 @@ emoji::https://unicode.org/emoji/charts/full-emoji-list.html#1f92b
 &#x1f603
 -->
 
+<div class="tab">
+  <button class="tablinks" onclick="changeWnd(0)">Chat</button>
+  <button class="tablinks" onclick="changeWnd(1)">2D</button>
+  <button class="tablinks" onclick="changeWnd(2)">3D</button>
+</div>
 <h1 id='Nini_face'>Nini: 
-<span onmousedown="changeWnd('')"></span>
+<span onmousedown="changeWnd(0)"></span>
 </h1>
 
-<div id="chat_history" class="window history">
+<div id="chat_history" class="window history" display="none">
 
 <!--
 +[H函数](,Nini聊天框)
@@ -167,12 +172,9 @@ emoji::https://unicode.org/emoji/charts/full-emoji-list.html#1f92b
 
 </div>
 
+<div id="draw_2D" class="window draw" display="block"></div>
+<div id="draw_3D" class="window draw" display="block"></div>
 
-
-<div id="draw_window" class="window draw">
-<svg width=100%  viewBox="0 0 1000 1000" id='display_window'></svg>
-</div>
-<div id="world_3d_scene" class="window history" display="none"></div>
 
 <br>
 
@@ -210,7 +212,7 @@ function print() {
 /*
 world_3D
 Nini.do
-NLP
+init
 */
 
 var face_normal='&#x1f611';
@@ -223,6 +225,9 @@ var face_happy='&#x1f603';
 var pt_Nini;
 var echo_sent=[];
 var list_pt=[];
+var draw_2D=document.getElementById("draw_2D");
+var draw_3D=document.getElementById("draw_3D");
+var list_wnd=[chat_history,draw_2D,draw_3D];
 
 var show_index=0;
 
@@ -233,7 +238,7 @@ window.addEventListener("keydown", function (event) {
 
   switch (event.key) {
     case "Escape":
-      changeWnd('');
+      changeWnd(0);
       break;
     default:
       return; // Quit when this doesn't handle the key event.
@@ -294,10 +299,12 @@ edit_box.addEventListener("keydown", function (event) {
     if(event.key==='Enter') {
         if(world_3D===undefined) {
             world_3D=window.m_world3D;
-//            world_3D.init('world_3d_scene');
             if(world_3D!==undefined) {
-                world_3D.init();
+                let i=show_index;
+                changeWnd(2);
+                world_3D.init('draw_3D');
                 animate_3D();
+                changeWnd(i);
             }
         }
 
@@ -310,29 +317,12 @@ edit_box.addEventListener("keydown", function (event) {
 });
 
 
-function changeWnd(i) {
-    if(i==='') {
-        show_index=0;
+function changeWnd(i0) {
+    show_index=(i0)%3;
+    for (let i in list_wnd) {
+        list_wnd[i].style.display="none";
     }
-    else {
-        show_index+=i;
-    }
-    show_index=(show_index)%3;
-    if(show_index==0) {
-        chat_history.style.display="block";
-        draw_window.style.display="none";
-        world_3d_scene.style.display="none";
-    }
-    else if(show_index==1) {
-        world_3d_scene.style.display="block";
-        chat_history.style.display="none";
-        draw_window.style.display="none";
-    }
-    else {
-        chat_history.style.display="none";
-        draw_window.style.display="block";
-        world_3d_scene.style.display="none";
-    }
+    list_wnd[show_index].style.display="block";
 }
 
 function talkToNini(code) {
@@ -370,22 +360,28 @@ function updateChatHistory(code,speaker='me') {
 
 }
 
-function runCode_Nini(code) {
+function runLine_Nini(code) {
     understandHear(code);
-    Nini.do('+[自我意识](Nini,)->+[更新意境](Nini,)',Nini.m_world,[pt_Nini]);
-
-let list_pt=listFromPt(Nini.m_world);
-printPtList(list_pt);
+    Nini.m_speak.m_text='';
+    Nini.do('+[清理结构](Nini,)->+[自我意识](Nini,)->+[更新意境](Nini,)',Nini.m_world,[pt_Nini]);
 
     if(Nini.m_speak.m_text!=='') {
         updateChatHistory(Nini.m_speak.m_text,speaker='Nini');
-        Nini.m_speak.m_text='';
+    }
+}
+
+
+function runCode_Nini(code) {
+    let sents=code.split("\n");
+    for (let i in sents) {
+        runLine_Nini(sents[i]);
     }
 }
 
 /*
 保存understandHear:...
 */
+
 
 function understandHear(code) {
     var list_pt,pt0,pt_con,pt_hear;
@@ -444,11 +440,17 @@ list_pt=loadFCode(text0);
 Nini.init(list_pt);
 pt_Nini=Nini.m_self;
 
-changeWnd(0);
 
+changeWnd(1);
+var draw2D=new Scene2D();
+draw2D.init(800,550,"draw_2D")
+draw2D.setWindow([0,0],0.1);
 
+//changeWnd(2);
 
 /*
+记住"Javascript"
+init
 保存描述:...
 */
 </script>

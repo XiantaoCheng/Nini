@@ -11,7 +11,8 @@ NetP(库)::文档/S应用/NiniJS/js/NetP.js
 记住"Javascript"
 clear
 print
-[m_name]
+[说]
+pt_del
 */
 
 function listFromPt(pt) {
@@ -292,7 +293,7 @@ think
             }
 
             if(operated) {
-                list_del.push(i);
+                list_del.push(list_pt[i]);
                 list_new=this.clear(list_new);
             }
         }
@@ -301,10 +302,19 @@ think
         return list_pt;
     }
 
+/*
++[保存文本](,StCore)
+*/
+
     delActPts(list_pt,list_del) {
-        for (let i=0;i<list_del.length;i++) {
-            let i_del=list_del[i];
-            let pt_del=list_pt[i_del];
+        for(let i in list_del) {
+//            let i_del=list_del[i];
+//            let pt_del=list_pt[i_del];
+            let pt_del=list_del[i];
+            let i_del=list_pt.indexOf(pt_del);
+            if (i_del===-1) {
+                continue;
+            }
             list_pt.splice(i_del,1);
     
             for (let j in pt_del.m_con) {
@@ -558,7 +568,7 @@ replace
             return;
         }
         else {
-            list_del.push(list_pt.indexOf(pt_del));
+            list_del.push(pt_del);
         }
     }
 
@@ -664,6 +674,9 @@ replace
         }
         else if(question.m_name=='[==]') {
             return this.tpEqual(sbj,obj,question);
+        }
+        else if(question.m_name=='[re]') {
+            return this.tpRegex(obj,question);
         }
         else if(question.m_name=='[想]') {
             return this.tpThink(question);
@@ -784,6 +797,24 @@ replace
             }
         }
         else if(obj.m_text===sbj.m_text) {
+            this.answerQuestion(question);
+            return true;
+        }
+        return false;
+    }
+
+/*
++[保存文本](,StCore)
+*/
+
+    tpRegex(obj,question) {
+        if(obj==='') {
+            return false;
+        }
+
+        let re=new RegExp(question.m_text);
+        let result=obj.m_text.search(re);
+        if(result!==-1) {
             this.answerQuestion(question);
             return true;
         }

@@ -2,6 +2,8 @@
 地址::文档/S应用/NiniJS/js/NL_parser.js
 +[保存文本](,NL_parser)
 +[J函数](,NL_parser)
++[打开文件夹]"文档/S应用/NiniJS/js"
++[显示](,地址)
 
 StCore(库)::文档/S应用/NiniJS/js/StCore.js
 StParser(库)::文档/S应用/NiniJS/js/Parser.js
@@ -14,9 +16,9 @@ NetP(库)::文档/S应用/NiniJS/js/NetP.js
 
 规则:...
 自动parser:...
-起点
+加上
 
-名词
+导出
 */
 
 
@@ -106,6 +108,89 @@ function parser_token_后缀(code,i) {
     }
 }
 
+function parser_token_前缀组(code,i) {
+    var i0=i;
+    var state, text, list_pt,pt_out;
+    var list_new=[];
+    var list_new0=[...list_new];
+
+    var pt0;
+    [state,i,pt0,list_pt]=parser_token_介宾短语(code,i);
+    list_new=list_new.concat(list_pt);
+    if (state===true) {
+        var i1=i;
+        var state1=true;
+        var list_new1=[...list_new];
+        // list_new=[];
+        [state,i,text]=word_pat_token(code,i,'为');
+        var pt1=new NetP("补语",text);
+        if (state===true) {
+            pt1.con(pt0,0);
+        } else {
+            pt1=pt0;
+        }
+        if (state===true) {
+            var pt2;
+            [state,i,pt2,list_pt]=parser_token_主语2(code,i);
+            list_new=list_new.concat(list_pt);
+            if (state===true) {
+                pt2.con(pt1,0);
+            } else {
+                pt2=pt1;
+            }
+        }
+        if (state===true) {
+            list_new.push(pt1);
+        }
+        
+        if (state===false) {
+            i=i1;
+            list_new=[...list_new1];
+            state=true;
+            state1=false;
+        }
+        
+        if (state===true) {
+            [state,i,text]=word_pat_token(code,i,', ');
+            if (state===true) {
+                var i2=i;
+                var state2=true;
+                var list_new2=[...list_new];
+                // list_new=[];
+                var pt2;
+                [state,i,pt2,list_pt]=parser_token_前缀组(code,i);
+                list_new=list_new.concat(list_pt);
+                if (state===true) {
+                    pt2.con(pt1,0);
+                } else {
+                    pt2=pt1;
+                }
+                if (state===false) {
+                    i=i2;
+                    list_new=[...list_new2];
+                    state=true;
+                    state2=false;
+                }
+                
+            }
+        }
+    }
+    if (state===true) {
+        pt_out=pt0;
+    }
+    
+    
+
+    if (state===false) {
+//        print("前缀组:",state);
+        return [false,i0,''];
+    }
+    else {
+//        print("前缀组:",state,pt_out.info());
+        return [true,i,pt_out,list_new];
+    }
+}
+
 function parser_token_前缀(code,i) {
     var i0=i;
     var state, text, list_pt,pt_out;
@@ -113,58 +198,8 @@ function parser_token_前缀(code,i) {
     var list_new0=[...list_new];
 
     var pt0;
-    [state,i,pt0,list_pt]=parser_token_介词(code,i);
+    [state,i,pt0,list_pt]=parser_token_前缀组(code,i);
     list_new=list_new.concat(list_pt);
-    if (state===true) {
-        var i1=i;
-        var list_new1=[...list_new];
-        var pt1;
-        [state,i,pt1,list_pt]=parser_token_主语(code,i);
-        list_new=list_new.concat(list_pt);
-        if (state===true) {
-            pt1.con(pt0,0);
-        } else {
-            pt1=pt0;
-        }
-        if (state===true) {
-            var i2=i;
-            var state2=true;
-            var list_new2=[...list_new];
-            // list_new=[];
-            var pt2;
-            [state,i,pt2,list_pt]=parser_token_副词(code,i);
-            list_new=list_new.concat(list_pt);
-            if (state===true) {
-                pt2.con(pt1,0);
-            } else {
-                pt2=pt1;
-            }
-            if (state===false) {
-                i=i2;
-                list_new=[...list_new2];
-                state=true;
-                state2=false;
-            }
-            
-        }
-        if (state===false) {
-            i=i1;
-            list_new=[...list_new1];
-        
-            var pt1;
-            [state,i,pt1,list_pt]=parser_token_并列短语(code,i);
-            list_new=list_new.concat(list_pt);
-            if (state===true) {
-                pt1.con(pt0,0);
-            } else {
-                pt1=pt0;
-            }
-        }
-        
-        if (state===true) {
-            [state,i,text]=word_pat_token(code,i,', ');
-        }
-    }
     if (state===true) {
         pt_out=pt0;
     }
@@ -593,6 +628,81 @@ function parser_token_偏正短语(code,i) {
     }
     else {
 //        print("偏正短语:",state,pt_out.info());
+        return [true,i,pt_out,list_new];
+    }
+}
+
+function parser_token_并列短语3b(code,i) {
+    var i0=i;
+    var state, text, list_pt,pt_out;
+    var list_new=[];
+    var list_new0=[...list_new];
+
+    var pt0;
+    [state,i,pt0,list_pt]=parser_token_名词(code,i);
+    list_new=list_new.concat(list_pt);
+    if (state===true) {
+        pt0=new NetP("个体").con(0,pt0);
+    }
+    if (state===true) {
+        [state,i,text]=word_pat_token(code,i,'和|或者|或|并且|以及');
+        var pt1=new NetP("连词",text);
+        if (state===true) {
+            pt1.con(pt0,0);
+        } else {
+            pt1=pt0;
+        }
+        if (state===true) {
+            var i2=i;
+            var list_new2=[...list_new];
+            var pt2;
+            [state,i,pt2,list_pt]=parser_token_并列短语3b(code,i);
+            list_new=list_new.concat(list_pt);
+            if (state===true) {
+                pt2.con(pt1,0);
+            } else {
+                pt2=pt1;
+            }
+            if (state===false) {
+                i=i2;
+                list_new=[...list_new2];
+            
+                var pt2;
+                [state,i,pt2,list_pt]=parser_token_名词(code,i);
+                list_new=list_new.concat(list_pt);
+                if (state===true) {
+                    pt2=new NetP("个体").con(0,pt2);
+                }
+                if (state===true) {
+                    pt2.con(pt1,0);
+                } else {
+                    pt2=pt1;
+                }
+                if (state===true) {
+                    list_new.push(pt2);
+                }
+            }
+            
+        }
+        if (state===true) {
+            list_new.push(pt1);
+        }
+    }
+    if (state===true) {
+        list_new.push(pt0);
+    }
+    if (state===true) {
+        pt_out=pt0;
+    }
+    
+    
+
+    if (state===false) {
+//        print("并列短语3b:",state);
+        return [false,i0,''];
+    }
+    else {
+//        print("并列短语3b:",state,pt_out.info());
         return [true,i,pt_out,list_new];
     }
 }
@@ -1042,52 +1152,6 @@ function parser_token_补语(code,i) {
     }
 }
 
-function parser_token_副词组(code,i) {
-    var i0=i;
-    var state, text, list_pt,pt_out;
-    var list_new=[];
-    var list_new0=[...list_new];
-
-    var pt0;
-    [state,i,pt0,list_pt]=parser_token_副词(code,i);
-    list_new=list_new.concat(list_pt);
-    if (state===true) {
-        var i1=i;
-        var state1=true;
-        var list_new1=[...list_new];
-        // list_new=[];
-        var pt1;
-        [state,i,pt1,list_pt]=parser_token_副词组(code,i);
-        list_new=list_new.concat(list_pt);
-        if (state===true) {
-            pt1.con(pt0,0);
-        } else {
-            pt1=pt0;
-        }
-        if (state===false) {
-            i=i1;
-            list_new=[...list_new1];
-            state=true;
-            state1=false;
-        }
-        
-    }
-    if (state===true) {
-        pt_out=pt0;
-    }
-    
-    
-
-    if (state===false) {
-//        print("副词组:",state);
-        return [false,i0,''];
-    }
-    else {
-//        print("副词组:",state,pt_out.info());
-        return [true,i,pt_out,list_new];
-    }
-}
-
 function parser_token_状语(code,i) {
     var i0=i;
     var state, text, list_pt,pt_out;
@@ -1117,7 +1181,7 @@ function parser_token_状语(code,i) {
         var list_new1=[...list_new];
         // list_new=[];
         var pt1;
-        [state,i,pt1,list_pt]=parser_token_副词组(code,i);
+        [state,i,pt1,list_pt]=parser_token_状语(code,i);
         list_new=list_new.concat(list_pt);
         if (state===true) {
             pt1.con(pt0,0);
@@ -1402,6 +1466,112 @@ function parser_token_谓语(code,i) {
     }
     else {
 //        print("谓语:",state,pt_out.info());
+        return [true,i,pt_out,list_new];
+    }
+}
+
+function parser_token_主语2(code,i) {
+    var i0=i;
+    var state, text, list_pt,pt_out;
+    var list_new=[];
+    var list_new0=[...list_new];
+
+    var i0=i;
+    var state0=true;
+    var list_new0=[...list_new];
+    // list_new=[];
+    var pt0;
+    [state,i,pt0,list_pt]=parser_token_数量词(code,i);
+    list_new=list_new.concat(list_pt);
+    if (state===false) {
+        i=i0;
+        list_new=[...list_new0];
+        state=true;
+        state0=false;
+    }
+    
+    if (state===true) {
+        var i1=i;
+        var state1=true;
+        var list_new1=[...list_new];
+        // list_new=[];
+        var pt1;
+        [state,i,pt1,list_pt]=parser_token_定语(code,i);
+        list_new=list_new.concat(list_pt);
+        if (state===true) {
+            pt1.con(pt0,0);
+        } else {
+            pt1=pt0;
+        }
+        if (state===false) {
+            i=i1;
+            list_new=[...list_new1];
+        
+            var pt1;
+            [state,i,pt1,list_pt]=parser_token_并列短语3b(code,i);
+            list_new=list_new.concat(list_pt);
+            if (state===true) {
+                pt1=new NetP("定语").con(0,pt1);
+            }
+            if (state===true) {
+                pt1.con(pt0,0);
+            } else {
+                pt1=pt0;
+            }
+            if (state===true) {
+                [state,i,text]=word_pat_token(code,i,'的');
+            }
+            if (state===true) {
+                list_new.push(pt1);
+            }
+        }
+        
+        if (state===false) {
+            i=i1;
+            list_new=[...list_new1];
+            state=true;
+            state1=false;
+        }
+        
+        if (state===true) {
+            var i2=i;
+            var list_new2=[...list_new];
+            var pt2;
+            [state,i,pt2,list_pt]=parser_token_并列短语3(code,i);
+            list_new=list_new.concat(list_pt);
+            if (state===true) {
+                pt2.con(pt1,0);
+            } else {
+                pt2=pt1;
+            }
+            if (state===false) {
+                i=i2;
+                list_new=[...list_new2];
+            
+                var pt2;
+                [state,i,pt2,list_pt]=parser_token_名词(code,i);
+                list_new=list_new.concat(list_pt);
+                if (state===true) {
+                    pt2.con(pt1,0);
+                } else {
+                    pt2=pt1;
+                }
+            }
+            
+        }
+    }
+    if (state===true) {
+        pt_out=pt2;
+    }
+    
+    
+
+    if (state===false) {
+//        print("主语2:",state);
+        return [false,i0,''];
+    }
+    else {
+//        print("主语2:",state,pt_out.info());
         return [true,i,pt_out,list_new];
     }
 }
@@ -2337,6 +2507,8 @@ function parser_token_文章(code,i) {
 }
 
 
+
+
 function parser_text2pts(code) {
     var list_pt0=[],list_pt=[];
     var state,i,pt;
@@ -2357,6 +2529,7 @@ function parser_text2pts(code) {
 
     return list_pt;
 }
+
 
 function info_PtList(list_pt) {
     var info_pt='';
@@ -2379,23 +2552,23 @@ function printPtList(list_pt) {
 +[J函数](,临时文本)
 */
 
-var dict_动词=['求解', '思考', '分到', '代入', '在', '追逐', '封印', '增加', '优化', '挑衅', '查看', '修改', '跑', '距离', '是', '移动', '输入', '击败', '偏微分', '执行', '清空', '获取', '对齐', '准备', '复制', '显示', '旋转', '相同', '相距', '裁剪', '交换', '放映', '反射', '置顶', '运动', '运行', '减去', '召唤', '捕捉', '进入', '使用', '化简', '吃', '提取', '更新', '回忆', '记作', '整理', '到达', '背向', '有', '拍摄', '调换', '接触', '转换', '替换', '平行', '相切', '保存', '叫做', '计算', '标记', '连接', '为', '结束', '微分', '相交', '定义', '分给', '设置', '引用', '解析', '看', '添加', '奔跑', '朝向', '积分', '离开', '玩耍', '乘以', '合并', '加上', '经过', '固定', '垂直', '平移', '描述', '除以', '截取', '记住', '围绕', '分析', '到'];
+var dict_动词=['置顶', '连接', '经过', '更新', '执行', '准备', '积分', '对齐', '交换', '在', '召唤', '平行', '标记', '接触', '背向', '引用', '到达', '减去', '相切', '是', '记作', '添加', '相交', '反射', '查看', '围绕', '看', '转换', '玩耍', '分给', '垂直', '到', '替换', '离开', '修改', '获取', '平移', '封印', '回忆', '固定', '记住', '求解', '有', '旋转', '计算', '保存', '挑衅', '奔跑', '描述', '定义', '进入', '微分', '移动', '增加', '代入', '设置', '化简', '分析', '拍摄', '输入', '运行', '朝向', '相同', '思考', '显示', '调换', '复制', '除以', '裁剪', '提取', '使用', '优化', '距离', '为', '运动', '跑', '清空', '截取', '追逐', '分到', '相距', '吃', '叫做', '击败', '放映', '偏微分', '乘以', '结束', '整理', '捕捉', '合并', '加上','导出','打开','关闭','观察', '解析'];
 
-var dict_名词=['球体', '反演', '倍率', 'Y方向', '能谱', '红外线', '范围', '相位', '光标', '光栅压缩器', '参数', '长度', '圆柱体', '光谱', '来源', '距离', '方向', '函数', '二维函数', '网格', '像', '截面分布', '标记区域', '标记点', 'FROG', '区域', '变量', '位置', '坐标', 'Javascript', '三维箭头', 'Y坐标', '波长', '波包', '发射角分布', '和式', '成像示意图', '参考面', '相机', '透镜组', '程序流程图', '长方形', '线段', '立方体', 'X方向', 'Z方向', '屏幕', '场强', '平面', '衍射环', '光强', '物', '顺序', 'X坐标', '采样点', '可见光', '多边形', '光束传播图', 'IP图像', '圆形', '类', '像距', '波前'];
+var dict_名词=['参考面', '标记区域', '圆形', 'FROG', '坐标', '像', '衍射环', 'X坐标', '波前', '和式', '来源', '二维函数', '红外线', '相机', '场强', '函数', '反演', '采样点', 'IP图像', '长方形', '类', '长度', '立方体', '距离', '物', '光束传播图', '发射角分布', '透镜组', '成像示意图', '倍率', 'X方向', '光强', '线段', '位置', '光谱', 'Y坐标', '网格', '平面', 'Z方向', '截面分布', '三维箭头', '参数', '可见光', '球体', '光栅压缩器', '波包', '光标', '变量', '波长', '程序流程图', '相位', '圆柱体', '方向', 'Y方向', '标记点', '范围', '像距', '多边形', '顺序', '屏幕', '能谱', 'Javascript', '区域'];
 
-var dict_形容词=['什么', '什么样', '单纯', '天真', '哪些', '全部', '聪明', '勇敢', '美丽', '所有', '正义', '善良'];
+var dict_形容词=['所有', '正义', '单纯', '全部', '什么', '善良', '美丽', '什么样', '哪些', '天真', '聪明', '勇敢'];
 
-var dict_数量词=['个', '颗', '号', '辆', '只'];
+var dict_数量词=['号', '辆', '只', '颗', '个'];
 
-var dict_副词=['都', '依次', '下面', '重新', '可以', '上面', '里', '不', '分别', '同时', '中', '一下'];
+var dict_副词=['都', '上面', '可以', '重新', '里', '分别', '同时', '依次', '下面', '中', '不', '一下'];
 
-var dict_介词=['从', '在', '按', '沿', '绕', '根据', '对', '按照', '以', '于'];
+var dict_介词=['按照', '于', '绕', '沿', '根据', '对', '以', '在', '从', '按'];
 
 var dict_代词=[];
 
 var dict_连词=['并且', '或者', '和', '或'];
 
-var dict_助词=['把', '了', '将', '被', '着', '的'];
+var dict_助词=['的', '把', '了', '被', '将', '着'];
 
 /*
 +[J函数](,默认定义)
@@ -2642,6 +2815,8 @@ function fun_名词(code) {
     pt0=new NetP("名词").con(0,pt);
     return code,pt0;
 }
+
+
 
 
 

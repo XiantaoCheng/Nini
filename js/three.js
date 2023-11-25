@@ -1,14 +1,18 @@
 /*
 地址::文档/S应用/NiniJS/js/three.js
+地址::文档/S应用/3D打印/js/three.js
 +[保存文本](,ThreeJS)
 +[J函数](,ThreeJS)
+有什么
 
-world_3D
+exportSTL
 three(库)::https://stemkoski.github.io/Three.js/js/Three.js
 OrbitControls(库)::https://stemkoski.github.io/Three.js/js/OrbitControls.js
 
-render
+m_objs
+moveTo
 版本1:...
+保存:...
 https://unpkg.com/three/build/three.module.js
 */
 
@@ -16,6 +20,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { CSG } from 'three-csg-ts';
+
 
 //import * as THREE from 'https://unpkg.com/three/build/three.module.js';
 //import { ObritControls } from 'https://unpkg.com/three/examples/jsm/controls/OrbitControls.js';
@@ -34,6 +41,7 @@ class Scene3D {
         this.m_ID=ID;
         this.m_container='';
         this.m_scene='';
+        this.m_objs='';
         this.m_camera='';
         this.m_renderer='';
         this.m_controls='';
@@ -53,8 +61,11 @@ class Scene3D {
 
         // SCENE
         this.m_scene = new THREE.Scene();
-        this.m_scene.background = new THREE.Color( 0xa0a0a0 );
-        this.m_scene.fog = new THREE.Fog( 0xa0a0a0, 10, 3000 );
+//         this.m_scene.background = new THREE.Color( 0xa0a0a0 );
+//         this.m_scene.fog = new THREE.Fog( 0xa0a0a0, 10, 3000 );
+        let color_sky=0xa0e0ff;
+        this.m_scene.background = new THREE.Color( color_sky );
+        this.m_scene.fog = new THREE.Fog( color_sky, 10, 3000 );
 
         // Ground
         const ground = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0xcbcbcb} ) );
@@ -63,16 +74,25 @@ class Scene3D {
         ground.receiveShadow = true;
         this.m_scene.add( ground );
 
+        // Obj
+        this.m_objs = new THREE.Group();
+        this.m_scene.add( this.m_objs );
+
         // Grid
         const helper = new THREE.GridHelper( 2000, 100 );
         helper.position.y = 0;
         helper.material.opacity = 0.25;
         helper.material.transparent = true;
         this.m_scene.add( helper );
-    
+
+/*
++[保存文本](,ThreeJS)
+*/
+
         // CAMERA
         var SCREEN_WIDTH = this.m_container.offsetWidth; 
-        var SCREEN_HEIGHT = SCREEN_WIDTH/1.5;
+        var SCREEN_HEIGHT = this.m_container.offsetHeight;
+//        var SCREEN_HEIGHT = SCREEN_WIDTH/1.5;
 //        var SCREEN_HEIGHT = this.m_container.offsetHeight;
 
 //        var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
@@ -101,12 +121,16 @@ class Scene3D {
     
         //RENDER
         this.m_renderer = new THREE.WebGLRenderer( {antialias:true} );
+//        this.m_renderer = new THREE.CanvasRenderer();
         this.m_renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
         this.m_renderer.shadowMap.enabled = true;
         this.m_renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.m_container.appendChild( this.m_renderer.domElement );
 
-    
+/*
++[保存文本](,ThreeJS)
+*/
+
         // CONTROLS
         this.m_controls = new OrbitControls( this.m_camera, this.m_renderer.domElement );
 //         this.m_controls.addEventListener( 'change', this.m_renderer);
@@ -135,7 +159,7 @@ class Scene3D {
         cube.scale.z=H;
         cube.castShadow = true;
         cube.receiveShadow = true;
-        this.m_scene.add( cube );
+        this.m_objs.add( cube );
         return cube;
     }
 
@@ -151,7 +175,7 @@ class Scene3D {
         shape.scale.z=R;
         shape.castShadow = true;
         shape.receiveShadow = true;
-        this.m_scene.add( shape );
+        this.m_objs.add( shape );
         return shape;
     }
 
@@ -167,9 +191,135 @@ class Scene3D {
         shape.castShadow = true;
         shape.receiveShadow = true;
         shape.position.set(x, y, z);
-        this.m_scene.add( shape );
+        this.m_objs.add( shape );
         return shape;
     }
+
+/*
++[保存文本](,ThreeJS)
+*/
+    addTube(xs,ys,zs,r) {
+        let points=[];
+        for (let i in xs) {
+            points.push(new THREE.Vector3(xs[i],ys[i],zs[i]));
+        }
+        var curve = new THREE.CatmullRomCurve3(points);
+    
+        var geometry = new THREE.TubeGeometry( curve, 200, r, 50 );
+        var material = new THREE.MeshLambertMaterial( {color: 0xffffff} );
+        material.side = THREE.DoubleSide;
+    
+        var shape = new THREE.Mesh( geometry, material );
+        shape.castShadow = true;
+        shape.receiveShadow = true;
+        this.m_objs.add( shape );
+        return shape;
+    
+    }
+
+    moveTo(shape,x,y,z) {
+        shape.position.set(x,y,z);
+    }
+
+    addRotation(xs,ys) {
+        let points=[];
+        for (let i in xs) {
+            points.push(new THREE.Vector2(xs[i],ys[i]));
+        }
+
+        var geometry = new THREE.LatheGeometry( points ,100 );
+        var material = new THREE.MeshLambertMaterial( {color: 0xffffff} );
+        material.side = THREE.DoubleSide;
+    
+        var shape = new THREE.Mesh( geometry, material );
+        shape.castShadow = true;
+        shape.receiveShadow = true;
+        this.m_objs.add( shape );
+        return shape;
+    
+    }
+
+    addExtrude(xs,ys,H) {
+        let points=[];
+        for (let i in xs) {
+            points.push(new THREE.Vector2(xs[i],ys[i]));
+        }
+
+        let shape1 = new THREE.Shape(points);
+        let geometry = new THREE.ExtrudeGeometry( shape1 );
+        let material = new THREE.MeshLambertMaterial( {color: 0xffffff} );
+    
+        var shape = new THREE.Mesh( geometry, material );
+        shape.scale.z=H;
+        shape.castShadow = true;
+        shape.receiveShadow = true;
+        this.m_objs.add( shape );
+        return shape;
+    
+    }
+
+    addExtrudePolygon(shx,shy,height,x,y,z) {
+        const shape = new THREE.Shape();
+        for (var i=0;i<shx.length;i++) {
+            if(i==0) {
+                shape.moveTo(shx[i],shy[i]);
+            }
+            else {
+                shape.lineTo(shx[i],shy[i]);
+            }
+        }
+    
+        const extrudeSettings = { bevelEnabled: false};
+
+        const geometry = new THREE.ExtrudeGeometry( shape , extrudeSettings );
+        const material = new THREE.MeshLambertMaterial( {color: 0xffffff} );
+        const mesh = new THREE.Mesh( geometry, material ) ;
+        mesh.scale.z=height;
+        mesh.position.set(x,y,z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        this.m_objs.add(mesh);
+        
+        return mesh;
+    }
+
+/*
++[保存文本](,ThreeJS)
+*/
+    // Line
+    addPath(xs,ys,zs='') {
+        let points=[];
+        for (let i in xs) {
+            if (zs===""){
+                points.push(new THREE.Vector3(xs[i],0,ys[i]));
+            } else {
+                points.push(new THREE.Vector3(xs[i],ys[i],zs[i]));
+            }
+        }
+    
+        var geometry = new THREE.BufferGeometry().setFromPoints( points );
+        var material = new THREE.LineBasicMaterial( {color: 0x000000} );
+    
+        var shape = new THREE.Line( geometry, material );
+        shape.castShadow = true;
+        this.m_scene.add( shape );
+        return shape;
+    
+    }
+
+    setPath(var_shape,xs,ys,zs='') {
+        let points=[];
+        for (let i in xs) {
+            if (zs===""){
+                points.push(new THREE.Vector3(xs[i],0,ys[i]));
+            } else {
+                points.push(new THREE.Vector3(xs[i],ys[i],zs[i]));
+            }
+        }
+    
+        var_shape.geometry.setFromPoints( points );    
+    }
+
 
     setRotationByEuler(shape,alpha,beta,gamma) {
         shape.setRotationFromEuler(new THREE.Euler(0,0,0,'XYZ'));
@@ -222,11 +372,58 @@ class Scene3D {
         this.m_controls.center.z=shape.position.z;
     }
 
+    removeObj(var_shape) {
+        var_shape.geometry.dispose();
+        var_shape.material.dispose();
+        this.m_objs.remove(var_shape);
+    }
+
+/*
++[保存文本](,ThreeJS)
+*/
+
+    subObjs(var_shape1,var_shape2) {
+        let var_shape=var_shape1;
+        var_shape1=CSG.subtract(var_shape,var_shape2);
+        world_3D.removeObj(var_shape);
+        world_3D.m_objs.add(var_shape1);
+        return var_shape1;
+    }
+
+    intObjs(var_shape1,var_shape2) {
+        let var_shape=var_shape1;
+        var_shape1=CSG.intersect(var_shape,var_shape2);
+        world_3D.removeObj(var_shape);
+        world_3D.m_objs.add(var_shape1);
+        return var_shape1;
+    }
+
+    uniObjs(var_shape1,var_shape2) {
+        let var_shape=var_shape1;
+        var_shape1=CSG.union(var_shape,var_shape2);
+        world_3D.removeObj(var_shape);
+        world_3D.m_objs.add(var_shape1);
+        return var_shape1;
+    }
+
     exportOBJ() {
         const exporter = new OBJExporter();
-        const data = exporter.parse( this.m_scene );
-        console.log(data);
+//        const data = exporter.parse( this.m_scene );
+        const data = exporter.parse( this.m_objs );
+//        console.log(data);
         this.downloadFile("model.obj", data );
+    }
+
+    exportSTL(obj=0) {
+        const exporter = new STLExporter();
+//        const data;
+        if (obj==0) {
+            const data = exporter.parse( this.m_objs );
+            this.downloadFile("model.stl", data );
+        } else {
+            const data = exporter.parse( obj );
+            this.downloadFile("model.stl", data );
+        }
     }
 
     downloadFile(filename, text) {
@@ -243,7 +440,6 @@ class Scene3D {
 
 }
 
-print("??????!!")
 var world_3D=new Scene3D();
 window.m_world3D=world_3D;
 
@@ -265,9 +461,9 @@ function printMatrix(matrix) {
     print();
 }
 
-
 /*
-init
+const data
+subObjs
 例子:...
 测试:...
 +[新建阅读窗口](,测试)
