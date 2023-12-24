@@ -1,6 +1,6 @@
 <!--
 +[返回目录]
-
+cmd_window
 LaTeX数学记号::https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
 +[打开](,LaTeX数学记号)
 -->
@@ -213,7 +213,7 @@ function print() {
 /*
 world_3D
 Nini.do
-init
+show_index
 */
 
 var face_normal='&#x1f611';
@@ -324,6 +324,7 @@ function changeWnd(i0) {
         list_wnd[i].style.display="none";
     }
     list_wnd[show_index].style.display="block";
+    pt_Nini.m_text=`${show_index}`;
 }
 
 function talkToNini(code) {
@@ -365,6 +366,7 @@ function runLine_Nini(code) {
     understandHear(code);
     Nini.m_speak.m_text='';
     Nini.do('+[清理结构](Nini,)->+[自我意识](Nini,)->+[更新意境](Nini,)',Nini.m_world,[pt_Nini]);
+    //printPtList(pt_Nini.m_con);
 
     if(Nini.m_speak.m_text!=='') {
         updateChatHistory(Nini.m_speak.m_text,speaker='Nini');
@@ -447,7 +449,10 @@ var draw2D=new Scene2D();
 draw2D.init(800,550,"draw_2D")
 draw2D.setWindow([0,0],0.1);
 
-//changeWnd(2);
+changeWnd(2);
+
+
+var m=1,cm=1e-2,inch=2.54*cm,feet=12*inch,mm=1e-3;
 
 /*
 记住"Javascript"

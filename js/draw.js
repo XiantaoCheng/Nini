@@ -3,7 +3,8 @@
 +[保存文本](,画板代码)
 +[J函数](,画板代码)
 Nini, 打开ThreeJS(文件)
-gridOn
+addCirc
+addPoly
 */
 
 
@@ -17,7 +18,10 @@ class Scene2D {
         this.m_objs='';
 
         this.m_gridOn=true;
+        this.m_markOn=false;
         this.m_axis=[];
+        this.m_mark=[];
+        this.m_objs=[];
     }
 
 
@@ -196,6 +200,7 @@ wheel::https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
             this.m_axis.push(shape);
         }
 /*
+setPt
 +[保存文本](,画板代码)
 */
 
@@ -235,6 +240,26 @@ wheel::https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
         this.m_gridOn=false;
     }
 
+    markOff() {
+        for (let i in this.m_mark) {
+            this.m_mark[i].m_master.m_mark=undefined;
+            this.m_mark[i].remove();
+        }
+        this.m_mark=[];
+        this.m_markOn=false;
+    }
+
+    markOn() {
+        this.markOff();
+        for (let i in this.m_objs) {
+            let obj=this.m_objs[i];
+            if (obj.m_text!==undefined & obj.m_text!=="") {
+                var shape=this.addMark(obj);
+            }
+        }
+        this.m_markOn=true;
+    }
+
     axis(axis_) {
         let pt0=[(axis_[0]+axis_[1])/2,-(axis_[2]+axis_[3])/2];
         let ratio;
@@ -247,7 +272,7 @@ wheel::https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event
     }
 
 /*
-grid
+addMark
 +[保存文本](,画板代码)
 */
 
@@ -262,6 +287,9 @@ grid
 
         if (this.m_gridOn) {
             this.gridOn();
+        }
+        if (this.m_markOn) {
+            this.markOn();
         }
     }
 
@@ -281,16 +309,27 @@ grid
         shape.setAttribute('stroke-width',"0.1%");
         shape.setAttribute('onmousedown','loadDragFunc(this)');
         this.m_scene.appendChild(shape);
+        this.m_objs.push(shape);
     
         return shape;
     }
-
+/*
++[保存文本](,画板代码)
+*/
     addCirc(R,x,y) {
         var shape=document.createElementNS("http://www.w3.org/2000/svg",'circle');
         shape.setAttribute('r',R);
         shape.setAttribute('cx',x);
         shape.setAttribute('cy',-y);
 
+        let N=50;
+        let Dan=2*Math.PI/N;
+        shape.m_x=[];
+        shape.m_y=[];
+        for (let i=0;i<N+1;i++) {
+            shape.m_x.push(R*Math.cos(i*Dan)+x);
+            shape.m_y.push(R*Math.sin(i*Dan)+y);
+        }
         shape.m_pos=[x,y];
         shape.m_world=this;
         shape.m_imType="circ";
@@ -300,7 +339,72 @@ grid
         shape.setAttribute('stroke-width',"0.1%");
         shape.setAttribute('onmousedown','loadDragFunc(this)');
         this.m_scene.appendChild(shape);
+        this.m_objs.push(shape);
     
+        return shape;
+    }
+
+    addPt(x,y) {
+        var shape=document.createElementNS("http://www.w3.org/2000/svg",'circle');
+        shape.setAttribute('r',"0.5%");
+        shape.setAttribute('cx',x);
+        shape.setAttribute('cy',-y);
+
+        shape.m_pos=[x,y];
+        shape.m_world=this;
+        shape.m_imType="pt";
+
+        shape.setAttribute('fill','#000000');
+        shape.setAttribute('stroke','#000000');
+        shape.setAttribute('stroke-width',"0.1%");
+        shape.setAttribute('onmousedown','loadDragFunc(this)');
+        this.m_scene.appendChild(shape);
+        this.m_objs.push(shape);
+    
+        return shape;
+    }
+
+    addText(x,y,text) {
+        var shape=document.createElementNS("http://www.w3.org/2000/svg",'text');
+        shape.setAttribute('x',x);
+        shape.setAttribute('y',-y);
+        shape.setAttribute('pointer-events',"none");
+        shape.textContent=text;
+
+        shape.m_pos=[x,y];
+        shape.m_world=this;
+        shape.m_imType="text";
+
+        shape.setAttribute('fill','#000000');
+        shape.setAttribute('onmousedown','loadDragFunc(this)');
+        this.m_scene.appendChild(shape);
+        this.m_objs.push(shape);
+    
+        return shape;
+    }
+
+/*
+m_gridOn
++[保存文本](,画板代码)
+*/
+
+    addMark(shape0) {
+        let ratio=this.m_ratio;
+        var shape=document.createElementNS("http://www.w3.org/2000/svg",'text');
+        shape.setAttribute('x',shape0.m_pos[0]);
+        shape.setAttribute('y',-shape0.m_pos[1]);
+        shape.setAttribute('pointer-events',"none");
+        shape.textContent=shape0.m_text;
+
+        shape.setAttribute('fill','#000000');
+        shape.setAttribute('font-size',20*ratio);
+//        shape.setAttribute('onmousedown','loadDragFunc(this)');
+        this.m_scene.appendChild(shape);
+        this.m_mark.push(shape);
+
+        shape0.m_mark=shape;
+        shape.m_master=shape0;
+
         return shape;
     }
 
@@ -320,12 +424,14 @@ grid
         shape.setAttribute('stroke-width',"0.1%");
         shape.setAttribute('onmousedown','loadDragFunc(this)');
         this.m_scene.appendChild(shape);
+        this.m_objs.push(shape);
     
         return shape;
     }
 
 /*
 Nini, 打开花园(文件)
+记住"Javascript"
 +[保存文本](,画板代码)
 */
     addPoly(pt0,x,y,angle=0,im_type="G") {
@@ -338,30 +444,39 @@ Nini, 打开花园(文件)
         }
         let pts=[];
 
-        this.m_x=[];
-        this.m_y=[];
+        shape.m_x=[];
+        shape.m_y=[];
         for (let i in x) {
-            this.m_x.push(x[i]);
-            this.m_y.push(y[i]);
+//            shape.m_x.push(x[i]);
+//            shape.m_y.push(y[i]);
 
             let xi,yi;
             xi=x[i]*Math.cos(angle/180*Math.PI)-y[i]*Math.sin(angle/180*Math.PI);
             yi=y[i]*Math.cos(angle/180*Math.PI)+x[i]*Math.sin(angle/180*Math.PI);
             pts.push([xi+pt0[0],-pt0[1]-yi]);
+
+            shape.m_x.push(xi+pt0[0]);
+            shape.m_y.push(yi+pt0[1]);
         }
+
         shape.setAttribute('points',pts);
 
         shape.m_pos=[pt0[0],pt0[1]];
         shape.m_world=this;
-        shape.m_imType="poly";
+        shape.m_imType="poly"+im_type;
 
         shape.setAttribute('stroke','#000000');
         shape.setAttribute('stroke-width',"0.1%");
         shape.setAttribute('onmousedown','loadDragFunc(this)');
         this.m_scene.appendChild(shape);
+        this.m_objs.push(shape);
     
         return shape;
     }
+
+/*
++[保存文本](,画板代码)
+*/
 
     setRect(shape,W,H,x,y) {
         shape.setAttribute('width',W);
@@ -374,8 +489,26 @@ Nini, 打开花园(文件)
         shape.setAttribute('r',R);
         shape.setAttribute('cx',x);
         shape.setAttribute('cy',-y);
+
+        let N=50;
+        let Dan=2*Math.PI/N;
+        shape.m_x=[];
+        shape.m_y=[];
+        for (let i=0;i<N+1;i++) {
+            shape.m_x.push(R*Math.cos(i*Dan)+x);
+            shape.m_y.push(R*Math.sin(i*Dan)+y);
+        }
+        shape.m_pos=[x,y];
+        shape.m_world=this;
+        shape.m_imType="circ";
         shape.m_pos=[x,y];
     }
+    setPt(shape,x,y) {
+        shape.setAttribute('cx',x);
+        shape.setAttribute('cy',-y);
+        shape.m_pos=[x,y];
+    }
+
     setElip(shape,rx,ry,x,y) {
         shape.setAttribute('rx',rx);
         shape.setAttribute('ry',ry);
@@ -385,22 +518,28 @@ Nini, 打开花园(文件)
     }
     setPoly(shape,pt0,x,y,angle=0,im_type="L") {
         let pts=[];
-        this.m_x=[];
-        this.m_y=[];
+        shape.m_x=[];
+        shape.m_y=[];
         for (let i in x) {
-            this.m_x.push(x[i]);
-            this.m_y.push(y[i]);
+//            shape.m_x.push(x[i]);
+//            shape.m_y.push(y[i]);
+
             let xi,yi;
             xi=x[i]*Math.cos(angle/180*Math.PI)-y[i]*Math.sin(angle/180*Math.PI);
             yi=y[i]*Math.cos(angle/180*Math.PI)+x[i]*Math.sin(angle/180*Math.PI);
             pts.push([xi+pt0[0],-pt0[1]-yi]);
+
+            shape.m_x.push(xi+pt0[0]);
+            shape.m_y.push(yi+pt0[1]);
         }
+
         shape.setAttribute('points',pts);
 //        shape.setAttribute('points',[[0,0],[100,100]]);
 
         shape.m_pos=[pt0[0],pt0[1]];
     }
 /*
+setPt
 +[保存文本](,画板代码)
 */
 
@@ -410,11 +549,16 @@ Nini, 打开花园(文件)
         if (shape.m_imType==="rect") {
             shape.setAttribute('x',x);
             shape.setAttribute('y',-y);
-        } else if (shape.m_imType==="circ" || shape.m_imType==="elip") {
+        } else if (shape.m_imType==="circ" || shape.m_imType==="elip" || shape.m_imType==="pt") {
             shape.setAttribute('cx',x);
             shape.setAttribute('cy',-y);
-        } else if (shape.m_imType==="poly") {
+        } else if (shape.m_imType==="polyG" || shape.m_imType==="polyL") {
             this.setPoly(shape,[x,y],this.m_x,this.m_y);
+        }
+
+        if (this.m_markOn===true) {
+            shape.m_mark.setAttribute('x',x);
+            shape.m_mark.setAttribute('y',-y);
         }
     }
 
@@ -426,11 +570,16 @@ Nini, 打开花园(文件)
         if (shape.m_imType==="rect") {
             shape.setAttribute('x',x);
             shape.setAttribute('y',-y);
-        } else if (shape.m_imType==="circ" || shape.m_imType==="elip") {
+        } else if (shape.m_imType==="circ" || shape.m_imType==="elip" || shape.m_imType==="pt") {
             shape.setAttribute('cx',x);
             shape.setAttribute('cy',-y);
-        } else if (shape.m_imType==="poly") {
+        } else if (shape.m_imType==="polyG" || shape.m_imType==="polyL") {
             this.setPoly(shape,[x,y],this.m_x,this.m_y);
+        }
+
+        if (this.m_markOn===true) {
+            shape.m_mark.setAttribute('x',x);
+            shape.m_mark.setAttribute('y',-y);
         }
 
 //        shape.setAttribute('cx',x+dx);
@@ -530,7 +679,7 @@ function dragEle2(e,pt_1) {
 
 
 /*
-print
+moveBy
 测试:...
 +[新建阅读窗口](,测试)
 +[J函数](,画板代码)
